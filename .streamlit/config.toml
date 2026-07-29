@@ -1,0 +1,8 @@
+# Streamlit config for the public demo. Theme only — no secrets here (those go in
+# the Streamlit Cloud dashboard / a gitignored .streamlit/secrets.toml, never committed).
+[theme]
+base = "light"
+primaryColor = "#d97757"        # Claude-ish terracotta for the accent
+
+[browser]
+gatherUsageStats = false

@@ -1,0 +1,8 @@
+# Public demo (Streamlit Community Cloud) — the cached-demo path needs ONLY this.
+# It serves precomputed answers from demo/examples.json: no LLM calls, no API key,
+# no index. So the host installs just Streamlit.
+streamlit>=1.40
+
+# Local "live" mode (optional) additionally needs the rag package and its runtime
+# deps — install the project itself:  uv pip install -e .   (sqlite-vec + anthropic)
+# plus a built data/index.db and VOYAGE_API_KEY + ANTHROPIC_API_KEY in .env.

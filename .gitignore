@@ -1,0 +1,24 @@
+# --- Corpus body: NEVER commit (we reference docs by source_url, not redistribute) ---
+# The docs text is Anthropic's copyrighted material with no open license. We fetch
+# it for local RAG use only. Code + the URL manifest + metrics are versioned; the
+# fetched .md and the chunked corpus are not.
+data/
+*.jsonl
+
+# Exception: the evaluation set is our own authored questions plus source URLs
+# (no corpus body), and it has to be version-controlled to be reproducible.
+!eval/qa.jsonl
+
+# --- Secrets: NEVER commit (keys live in .env / Streamlit Cloud dashboard) ---
+.env
+.streamlit/secrets.toml
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/

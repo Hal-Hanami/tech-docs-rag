@@ -1,0 +1,29 @@
+[project]
+name = "tech-docs-rag"
+version = "1.0.0"
+description = "Source-grounded RAG over technical documentation: hybrid retrieval with reranking, citation-bearing answers, explicit abstention, and an evaluation harness that measures all three."
+requires-python = ">=3.11"
+
+# Two third-party runtime dependencies, on purpose.
+#   sqlite-vec  — vector search inside the same SQLite file that holds BM25 (FTS5)
+#                 and the citation metadata, so the whole datastore is one file.
+#   anthropic   — the official SDK, used for answer generation and judging.
+# Voyage (embeddings and reranking) is called over urllib rather than adding a
+# third dependency for two JSON endpoints. Ingestion is standard library only.
+dependencies = ["sqlite-vec", "anthropic"]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["ingest", "rag"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# Tests import sibling fixtures (`from test_store import FakeEmbedder`), which
+# needs the tests directory itself on the path.
+pythonpath = [".", "tests"]
