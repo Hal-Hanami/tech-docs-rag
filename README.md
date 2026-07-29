@@ -223,6 +223,15 @@ git-ignored, and the demo artifact ships **no corpus body** (only model-written
 cited prose plus source URLs, enforced by a test in `demo/render.py`). Only code,
 the URL manifest, the evaluation set, and metrics are versioned.
 
+## Built on this
+
+[incident-triage-agent](https://github.com/Hal-Hanami/incident-triage-agent)
+reuses the `rag` package here as the runbook search behind a read-only incident
+triage agent on the Claude Agent SDK. It carries the same posture one rung up the
+autonomy ladder: where this system declines to *answer* what its sources do not
+support, that one declines to *act* when confidence is low, and escalates to a
+human instead.
+
 ## Contributing
 
 Commit and comment conventions are in [CONTRIBUTING.md](CONTRIBUTING.md).
