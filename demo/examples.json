@@ -3,7 +3,7 @@
   "k": 3,
   "generation_model": "claude-opus-4-8",
   "retrieval": "hybrid (dense + BM25, RRF) + Voyage rerank-2.5-lite",
-  "note": "Precomputed answers for the public demo. Contains model-written, cited prose + source URLs + measured cost/latency only — no corpus body (design §9.2). Re-bake with `python -m demo.bake`.",
+  "note": "Precomputed answers for the public demo. Contains model-written, cited prose + source URLs + measured cost/latency only — no corpus body. Re-bake with `python -m demo.bake`.",
   "bake_cost_usd": 0.1967,
   "examples": [
     {
