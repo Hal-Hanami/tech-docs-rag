@@ -204,7 +204,7 @@ streamlit run app.py
 ### Tests
 
 ```bash
-python -m pytest -q               # 67 tests, no key, no network
+python -m pytest -q               # 98 tests, no key, no network
 ```
 
 ## Corpus and licensing
