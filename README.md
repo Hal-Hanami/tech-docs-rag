@@ -67,18 +67,35 @@ Reranking saturates recall at rank 3 (`recall@3 = 100 %`), so chunks 4 and 5 cos
 tokens without adding coverage. Cutting the generation context from **k = 5 to
 k = 3**:
 
-| metric (evaluation set, core slice, one session) | k = 5 | k = 3 | Δ |
+| metric (evaluation set, core slice, 26 q, one session, 2026-07-30) | k = 5 | k = 3 | Δ |
 |---|---|---|---|
 | recall@1 / recall@3 / MRR | 86.4 % / 100 % / 0.932 | **identical** | **0** |
 | abstention / false abstentions | 100 % / 0 | 100 % / 0 | 0 |
-| **total cost per query** | $0.0303 | **$0.0219** | **−28 %** |
 | generation input tokens | 88,499 | 54,197 | **−39 %** |
-| latency p95 | 13.0 s | 10.2 s | −22 % |
+| generation output tokens | 9,619 | 9,963 | +4 % |
+| **total cost per query** | $0.0270 | **$0.0207** | **−23 %** |
+
+```bash
+python -m rag eval --tag core --no-judge        # k = 5
+python -m rag eval --tag core --no-judge -k 3   # k = 3
+```
+
+**The cost falls by less than the tokens do, and the gap is the interesting
+part.** Cutting `k` removes 39 % of the *input* tokens, but only 23 % of the
+bill, because two components do not shrink with it: the answers themselves get
+slightly *longer* with less context to quote from (+4 % output tokens), and the
+reranker scores the full candidate pool regardless of `k`, so its $0.0193 is
+identical in both runs. A token count is not a cost, and quoting the token
+saving as if it were the cost saving would overstate this result by 16 points.
 
 The quality claim rests on the **deterministic** metrics, which are unchanged —
-not on faithfulness, which is too noisy to carry it. The reranker scores the full
-candidate pool regardless of `k`, so this trims generation cost without touching
-retrieval quality.
+not on faithfulness, which is too noisy to carry it.
+
+**Latency is not part of this claim.** An earlier run recorded p95 13.0 s → 10.2 s
+and read that as a latency win; re-measuring gives 10.41 s → 10.32 s, i.e. no
+movement. p95 over 26 questions is essentially the second-slowest question, so it
+moves with whatever the API was doing that afternoon. The honest reading is that
+trimming `k` buys cost, not speed.
 
 ---
 

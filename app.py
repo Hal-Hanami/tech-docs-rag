@@ -186,6 +186,6 @@ st.caption(
     "**Why this isn't just a wrapper** — measured retrieval (recall@1 86.4% / "
     "recall@3 100% / MRR 0.932; +25pt recall@1 on hard queries from reranking), "
     "grounded-or-abstain generation (hallucination suppression), and a per-model "
-    "cost trace that drove a **−28%/query** optimization (k 5→3) with the "
+    "cost trace that drove a **−23%/query** optimization (k 5→3) with the "
     "deterministic quality metrics unchanged. Full write-up in the repo README."
 )
