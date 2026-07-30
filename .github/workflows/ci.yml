@@ -1,6 +1,6 @@
 name: tests
 
-# The offline suite (fakes; no key, no network) — the same 134 tests the README
+# The offline suite (fakes; no key, no network) — the same 143 tests the README
 # claims. CI exists so that claim is third-party verifiable, not self-reported.
 #
 # The checks after the suite exist because the defects this project has actually
@@ -49,3 +49,21 @@ jobs:
           grep -q "same $n tests" .github/workflows/ci.yml \
             || { echo "this workflow's own comment does not say '$n tests'"; exit 1; }
           echo "docs and suite agree: $n tests"
+
+      - name: every section of the design must be pinned by a test
+        run: |
+          python - <<'PY'
+          import pathlib, re, sys
+          design = pathlib.Path("docs/DESIGN.md").read_text(encoding="utf-8")
+          sections = re.findall(r"^## §(\d+)\s", design, re.M)
+          if not sections:
+              sys.exit("docs/DESIGN.md declares no numbered sections")
+          tests = "\n".join(p.read_text(encoding="utf-8")
+                            for p in pathlib.Path("tests").glob("*.py"))
+          # citing §4.3 counts as citing §4 — a subsection belongs to its section
+          unpinned = [n for n in sections if not re.search(rf"§{n}(?!\d)", tests)]
+          if unpinned:
+              sys.exit("no test cites design " + ", ".join(f"§{n}" for n in unpinned)
+                       + " — a written rule nobody checks is one the next change breaks")
+          print(f"all {len(sections)} design sections are pinned by a test")
+          PY
