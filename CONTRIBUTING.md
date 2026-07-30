@@ -69,3 +69,27 @@ python -m pytest -q
 ```
 
 Tests must pass without `VOYAGE_API_KEY` or `ANTHROPIC_API_KEY` set.
+
+### Four rules the build enforces
+
+Every defect this project has shipped was outside the tests' reach rather than a
+failure inside it. A flag whose help text disagreed with its behaviour lived in a
+module at 0% coverage; a package move broke a downstream consumer that no test on
+either side imported. So the rules below are checked by CI, not by good intentions.
+
+1. **No module sits at 0% coverage.** A file nothing imports is a file nothing
+   checks. Entry points count: `python -m rag` is a documented command, so
+   something must prove it resolves.
+2. **A number in the documentation is tied to something that produces it.** Either
+   a reproduction command printed beside it, or a test that re-derives it —
+   `tests/test_published_numbers.py` reads the cost table out of `README.md` and
+   rebuilds it from `rag/observe.py`, so a rate change cannot quietly make the
+   README wrong. The test count is checked the same way.
+3. **`tests/test_public_api.py` is the contract with other repositories.** Anything
+   another project imports from `rag` is pinned there. Moving it is fine; moving it
+   without updating that file in the same commit is how a consumer breaks silently.
+4. **A restructuring must be shown not to change behaviour.** Parse both trees,
+   strip docstrings, and compare the moved functions with `ast.dump`. Identical
+   output is evidence; "it was only a move" is not. What survives that check can be
+   committed as `refactor`; what does not is a `feat` or a `fix` and needs its own
+   reasoning in the body.
