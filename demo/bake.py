@@ -29,6 +29,8 @@ from rag.clients.claude import ANSWER_MODEL, ClaudeAnswerer
 from rag.clients.voyage import VoyageEmbedder, VoyageReranker
 from rag.config import load_dotenv
 
+from .render import validate_examples
+
 ROOT = Path(__file__).resolve().parent.parent
 DB_FILE = ROOT / "data" / "index.db"
 OUT_FILE = ROOT / "demo" / "examples.json"
@@ -50,12 +52,17 @@ QUESTIONS = [
 
 
 def bake_one(question: str, embedder: VoyageEmbedder, reranker: VoyageReranker,
-             answerer: ClaudeAnswerer) -> dict:
-    """Run one real request and capture answer + citations + trace (mirrors cmd_ask)."""
+             answerer: ClaudeAnswerer, *, db_path: Path = DB_FILE) -> dict:
+    """Run one real request and capture answer + citations + trace (mirrors run_ask).
+
+    `db_path` is a parameter rather than a module constant read directly, so the
+    shape of what gets baked can be asserted offline against a temporary index
+    and fake clients — the artifact this writes is what the public page serves.
+    """
     trace = observe.Trace()
     embed_before = embedder.usage["total_tokens"]
     rerank_before = reranker.usage["total_tokens"]
-    out = generate_mod.answer(question, DB_FILE, embedder, answerer, k=K,
+    out = generate_mod.answer(question, db_path, embedder, answerer, k=K,
                               hybrid=True, reranker=reranker, trace=trace)
     trace.add_usage(embedder.model,
                     {"total_tokens": embedder.usage["total_tokens"] - embed_before})
@@ -104,7 +111,38 @@ def main() -> None:
         examples.append(ex)
 
     total = round(sum(e["trace"]["total_usd"] for e in examples), 4)
-    payload = {
+    publish(build_payload(examples, total))
+    print(f"\nwrote {OUT_FILE.relative_to(ROOT)}  ({len(examples)} examples, "
+          f"bake cost ${total:.4f})")
+
+
+def publish(payload: dict, *, out_file: Path = OUT_FILE) -> None:
+    """Write the artifact, but only if it meets the contract.
+
+    Checked here rather than left to the test suite because this is the step that
+    reaches the public page: `app.py` reads the artifact without guarding, so a
+    violation is a traceback in front of a visitor. A bake that fails leaves the
+    published file untouched and keeps its own output under `.rejected` — the run
+    cost real money, and the fastest way to see what went wrong is to read it.
+    """
+    problems = validate_examples(payload)
+    if problems:
+        rejected = out_file.parent / (out_file.name + ".rejected")
+        rejected.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n",
+                            encoding="utf-8")
+        raise SystemExit(
+            f"bake rejected — {len(problems)} contract violation(s), "
+            f"{out_file.name} left unchanged:\n  "
+            + "\n  ".join(problems)
+            + f"\nthe rejected artifact is at {rejected.name}"
+        )
+    out_file.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n",
+                        encoding="utf-8")
+
+
+def build_payload(examples: list[dict], total_usd: float) -> dict:
+    """Assemble the artifact. Pure, so the contract check above can run on it."""
+    return {
         "generated_at": date.today().isoformat(),
         "k": K,
         "generation_model": ANSWER_MODEL,
@@ -112,13 +150,9 @@ def main() -> None:
         "note": ("Precomputed answers for the public demo. Contains model-written, "
                  "cited prose + source URLs + measured cost/latency only — no corpus "
                  "body. Re-bake with `python -m demo.bake`."),
-        "bake_cost_usd": total,
+        "bake_cost_usd": total_usd,
         "examples": examples,
     }
-    OUT_FILE.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n",
-                        encoding="utf-8")
-    print(f"\nwrote {OUT_FILE.relative_to(ROOT)}  ({len(examples)} examples, "
-          f"bake cost ${total:.4f})")
 
 
 if __name__ == "__main__":
