@@ -53,12 +53,17 @@ def _require_key(api_key: str | None, *, disable_hint: str = "") -> str:
     )
 
 
-def _post(url: str, payload: dict[str, Any], key: str, *, retries: int = 4) -> dict[str, Any]:
+def _post(url: str, payload: dict[str, Any], key: str, *, label: str,
+          retries: int = 4) -> dict[str, Any]:
     """POST JSON, retrying transient failures with exponential backoff.
 
     Returns the decoded response. Raises `SystemExit` with the server's own
     message on a non-retryable error — the API's explanation of what it disliked
     is more useful to the reader than anything we could paraphrase.
+
+    `label` names the endpoint in that message. Both endpoints share this helper,
+    so without it a failure reads the same whether embedding or reranking broke,
+    and the first question anyone asks about an outage is which one it was.
     """
     request = urllib.request.Request(
         url,
@@ -74,13 +79,13 @@ def _post(url: str, payload: dict[str, Any], key: str, *, retries: int = 4) -> d
                 time.sleep(2 ** attempt)
                 continue
             detail = e.read().decode("utf-8", "replace")[:300]
-            raise SystemExit(f"Voyage API error {e.code}: {detail}")
+            raise SystemExit(f"{label} error {e.code}: {detail}")
         except urllib.error.URLError as e:
             if attempt < retries - 1:
                 time.sleep(2 ** attempt)
                 continue
-            raise SystemExit(f"Voyage API connection error: {e}")
-    raise SystemExit("Voyage API: exhausted retries")  # unreachable; keeps type-checkers happy
+            raise SystemExit(f"{label} connection error: {e}")
+    raise SystemExit(f"{label}: exhausted retries")  # unreachable; keeps type-checkers happy
 
 
 class VoyageEmbedder:
@@ -107,7 +112,7 @@ class VoyageEmbedder:
     def _embed_batch(self, texts: list[str], input_type: str) -> list[list[float]]:
         data = _post(EMBED_URL,
                      {"input": texts, "model": self.model, "input_type": input_type},
-                     self._key)
+                     self._key, label="Voyage embedding API")
         self.usage["total_tokens"] += data.get("usage", {}).get("total_tokens", 0)
         # Sort by the API's own index rather than trusting response order: the
         # embedding at position i must line up with texts[i] or the whole index
@@ -134,7 +139,7 @@ class VoyageReranker:
         }
         if top_k is not None:
             payload["top_k"] = top_k
-        data = _post(RERANK_URL, payload, self._key)
+        data = _post(RERANK_URL, payload, self._key, label="Voyage rerank API")
         self.usage["total_tokens"] += data.get("usage", {}).get("total_tokens", 0)
         ranked = [(int(d["index"]), float(d["relevance_score"])) for d in data["data"]]
         # The API returns these already sorted; sorting again costs nothing and
