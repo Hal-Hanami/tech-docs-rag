@@ -1,4 +1,4 @@
-"""Offline tests for the demo baker — design §8.2, the step that writes what the
+"""Offline tests for the demo baker — design §8.2 and §8.4, the step that writes what the
 public serves.
 
 `demo.bake` is the only module that produces `demo/examples.json`, and until this
@@ -116,6 +116,58 @@ def test_a_full_payload_meets_the_contract_it_will_be_published_under(tmp_path):
     payload = bake.build_payload([grounded, abstained], 0.42)
     assert validate_examples(payload) == []
     assert payload["bake_cost_usd"] == 0.42
+
+
+# --- §8.4 a failed batch keeps what it already paid for ---------------------------
+
+def _entry(question: str) -> dict:
+    return {"question": question, "answer": f"a [1] for {question}", "grounded": True,
+            "sources": [{"n": 1, "url": "https://x", "section_path": "S"}],
+            "trace": {"stages": [], "total_ms": 1.0, "total_usd": 0.02,
+                      "cost_by_model": {"m": {"input_tokens": 1, "usd": 0.02}}}}
+
+
+def test_a_failure_part_way_through_keeps_the_answers_already_bought(tmp_path):
+    partial = tmp_path / "examples.json.partial"
+
+    def flaky(q: str) -> dict:
+        if q == "third":
+            raise RuntimeError("overloaded")
+        return _entry(q)
+
+    with pytest.raises(RuntimeError):
+        bake.bake_all(["first", "second", "third"], flaky, partial_file=partial)
+
+    kept = json.loads(partial.read_text(encoding="utf-8"))
+    assert [e["question"] for e in kept] == ["first", "second"]
+
+
+def test_a_rerun_pays_only_for_what_is_missing(tmp_path):
+    partial = tmp_path / "examples.json.partial"
+    partial.write_text(json.dumps([_entry("first"), _entry("second")]), encoding="utf-8")
+    charged: list[str] = []
+
+    def bake_one_question(q: str) -> dict:
+        charged.append(q)
+        return _entry(q)
+
+    out = bake.bake_all(["first", "second", "third"], bake_one_question,
+                        partial_file=partial)
+
+    assert charged == ["third"]                    # the two already bought are not re-bought
+    assert [e["question"] for e in out] == ["first", "second", "third"]
+    assert not partial.exists()                    # a finished run cleans up after itself
+
+
+def test_a_run_that_fails_on_its_first_question_leaves_no_partial(tmp_path):
+    partial = tmp_path / "examples.json.partial"
+
+    def always_fails(q: str) -> dict:
+        raise RuntimeError("overloaded")
+
+    with pytest.raises(RuntimeError):
+        bake.bake_all(["only"], always_fails, partial_file=partial)
+    assert not partial.exists()  # nothing was paid for, so there is nothing to keep
 
 
 # --- the publishing guard ---------------------------------------------------------

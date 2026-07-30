@@ -22,6 +22,7 @@ from __future__ import annotations
 import json
 from datetime import date
 from pathlib import Path
+from typing import Callable
 
 from rag import generate as generate_mod
 from rag import observe
@@ -34,6 +35,8 @@ from .render import validate_examples
 ROOT = Path(__file__).resolve().parent.parent
 DB_FILE = ROOT / "data" / "index.db"
 OUT_FILE = ROOT / "demo" / "examples.json"
+# Answers already paid for, kept when a run cannot finish (§8.4).
+PARTIAL_FILE = OUT_FILE.parent / (OUT_FILE.name + ".partial")
 
 K = 3  # generation context size, cut from 5 after recall@3 measured 100%
 
@@ -103,17 +106,56 @@ def main() -> None:
     answerer = ClaudeAnswerer()
 
     print(f"baking {len(QUESTIONS)} examples at k={K} (real pipeline) ...\n")
-    examples = []
-    for q in QUESTIONS:
-        ex = bake_one(q, embedder, reranker, answerer)
-        flag = "grounded" if ex["grounded"] else "ABSTAINED"
-        print(f"  [{flag:9}] ${ex['trace']['total_usd']:.4f}  {q}")
-        examples.append(ex)
+    examples = bake_all(QUESTIONS, lambda q: bake_one(q, embedder, reranker, answerer))
 
     total = round(sum(e["trace"]["total_usd"] for e in examples), 4)
     publish(build_payload(examples, total))
     print(f"\nwrote {OUT_FILE.relative_to(ROOT)}  ({len(examples)} examples, "
           f"bake cost ${total:.4f})")
+
+
+def bake_all(questions: list[str], bake: Callable[[str], dict],
+             *, partial_file: Path = PARTIAL_FILE) -> list[dict]:
+    """Bake every question, reusing anything an earlier run already paid for (§8.4).
+
+    A batch of paid requests should not be an all-or-nothing bet. One overloaded
+    response used to discard every answer bought before it, so a transient failure
+    on the seventh question cost the six that had already succeeded. Whatever
+    completed is written aside on the way out, and a rerun picks it up.
+    """
+    done = _load_partial(partial_file)
+    examples: list[dict] = []
+    try:
+        for q in questions:
+            if q in done:
+                print(f"  [cached   ]          {q}")
+                examples.append(done[q])
+                continue
+            ex = bake(q)
+            flag = "grounded" if ex["grounded"] else "ABSTAINED"
+            print(f"  [{flag:9}] ${ex['trace']['total_usd']:.4f}  {q}")
+            examples.append(ex)
+    except BaseException:
+        if examples:
+            _save_partial(examples, partial_file)
+            print(f"\nkept {len(examples)}/{len(questions)} answers in "
+                  f"{partial_file.name} — rerun to resume from there")
+        raise
+    partial_file.unlink(missing_ok=True)
+    return examples
+
+
+def _load_partial(partial_file: Path) -> dict[str, dict]:
+    """Answers a previous run paid for, keyed by question."""
+    if not partial_file.exists():
+        return {}
+    rows = json.loads(partial_file.read_text(encoding="utf-8"))
+    return {e["question"]: e for e in rows}
+
+
+def _save_partial(examples: list[dict], partial_file: Path) -> None:
+    partial_file.write_text(json.dumps(examples, indent=2, ensure_ascii=False) + "\n",
+                            encoding="utf-8")
 
 
 def publish(payload: dict, *, out_file: Path = OUT_FILE) -> None:

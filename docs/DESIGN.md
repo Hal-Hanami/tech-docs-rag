@@ -208,6 +208,12 @@ the caption fields, source numbering, citation resolution, and the trace fields 
 metrics row and cost table render. A missing key is a traceback in front of a
 visitor, not a test failure.
 
+**§8.4** **A batch of paid requests is not an all-or-nothing bet.** Baking issues
+one billed request per question; a failure part way through keeps the answers
+already bought and a rerun resumes from them. Providers return transient overload
+errors, and the first version of this discarded six paid answers because the
+seventh request came back `overloaded_error`.
+
 ## §9 The `rag` package as a published interface
 
 **§9.1** The module paths, call signatures, and result fields that another project

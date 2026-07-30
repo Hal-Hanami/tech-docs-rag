@@ -1,6 +1,6 @@
 name: tests
 
-# The offline suite (fakes; no key, no network) — the same 143 tests the README
+# The offline suite (fakes; no key, no network) — the same 146 tests the README
 # claims. CI exists so that claim is third-party verifiable, not self-reported.
 #
 # The checks after the suite exist because the defects this project has actually

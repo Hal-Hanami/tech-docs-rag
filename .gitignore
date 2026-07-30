@@ -30,3 +30,4 @@ uv.lock
 
 # A bake that fails the contract check parks its output here for inspection.
 demo/examples.json.rejected
+demo/examples.json.partial

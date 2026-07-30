@@ -27,6 +27,13 @@ from ..ports import Completion, Verdict
 ANSWER_MODEL = "claude-opus-4-8"
 JUDGE_MODEL = "claude-haiku-4-5"
 
+# Attempts per request, matching the Voyage clients rather than leaving the two
+# halves of the pipeline with different tolerances for the same weather. The SDK
+# retries 429/5xx with backoff; the default of 2 was not enough to ride out an
+# `overloaded_error` during a batch run, and every abandoned request had already
+# been paid for.
+MAX_RETRIES = 4
+
 # Structured-outputs schema for the verdict. Deliberately inside the documented
 # json_schema subset (object / boolean / array-of-string / additionalProperties
 # false) — a schema the API cannot compile fails the whole request.
@@ -98,7 +105,7 @@ class ClaudeAnswerer:
         # Caps thinking *and* answer text together, so this needs headroom for
         # both; the truncation marker below exists because it is easy to set low.
         self.max_tokens = max_tokens
-        self._client = anthropic.Anthropic()
+        self._client = anthropic.Anthropic(max_retries=MAX_RETRIES)
 
     def complete(self, system: str, user: str) -> Completion:
         msg = self._client.messages.create(
@@ -133,7 +140,7 @@ class ClaudeJudge:
         _require_key()
         self.model = model
         self.max_tokens = max_tokens
-        self._client = anthropic.Anthropic()
+        self._client = anthropic.Anthropic(max_retries=MAX_RETRIES)
 
     def judge(self, question: str, answer: str, sources_block: str) -> Verdict:
         msg = self._client.messages.create(
