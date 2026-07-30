@@ -301,3 +301,10 @@ def test_run_ask_dense_only_keeps_the_reranker(ask_harness):
 def test_run_ask_no_rerank_drops_only_the_reranker(ask_harness):
     commands.run_ask("q", no_rerank=True)
     assert ask_harness["hybrid"] is True and ask_harness["reranker"] is None
+
+
+def test_the_module_entry_point_resolves():
+    # `python -m rag` is the command every doc prints. Nothing else imports
+    # rag.__main__, so without this the one line it contains is never run.
+    import rag.__main__ as entry
+    assert entry.main is cli.main
