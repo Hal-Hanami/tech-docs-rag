@@ -1,4 +1,4 @@
-"""Offline tests for the M2 store + index + search round-trip.
+"""Offline tests for the store + index + search round-trip — design §2.3, §3.
 
 No network: a deterministic bag-of-words `FakeEmbedder` stands in for Voyage so
 we can assert that sqlite-vec actually orders results by semantic overlap and

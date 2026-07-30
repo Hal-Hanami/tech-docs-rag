@@ -1,4 +1,4 @@
-"""The surface another repository imports — pinned here, on the provider's side.
+"""The surface another repository imports — design §9.1, pinned on the provider's side.
 
 `incident-triage-agent` reuses this package as its runbook search: it does
 `from rag import index, search` and `from rag.clients import voyage`, then calls

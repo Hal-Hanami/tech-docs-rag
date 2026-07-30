@@ -1,7 +1,7 @@
-"""Offline tests for the M5 retrieval pipeline: BM25 (FTS5), RRF fusion, hybrid
-search, and reranking.
+"""Offline tests for retrieval — design §3: BM25 (FTS5), RRF fusion (§3.1), hybrid
+search, reranking, and the empty-query guard (§3.4).
 
-No network, no keys: the FakeEmbedder (M2) stands in for Voyage embeddings and a
+No network, no keys: the FakeEmbedder stands in for Voyage embeddings and a
 scripted reranker stands in for the Voyage reranker. FTS5/BM25 runs in the real
 SQLite, so the keyword path is exercised for real. (The live Voyage reranker is
 exercised via `python -m rag query`/`eval`.)
@@ -17,7 +17,7 @@ from rag import observe
 from rag import search as search_mod
 from rag import store
 
-from test_store import DOCS, FakeEmbedder  # reuse the M2 fixtures
+from test_store import DOCS, FakeEmbedder  # reuse the store fixtures
 
 
 def _build(tmp_path: Path) -> Path:
@@ -84,7 +84,7 @@ def test_hybrid_surfaces_a_keyword_dense_is_blind_to(tmp_path):
 
 
 def test_search_records_trace_spans(tmp_path):
-    # M6: a Trace passed to search() captures one span per retrieval stage, in order.
+    # §6.1: a Trace passed to search() captures one span per stage, in order.
     db = _build(tmp_path)
     trace = observe.Trace()
     search_mod.search("how do I cache the prompt prefix?", db, FakeEmbedder(),

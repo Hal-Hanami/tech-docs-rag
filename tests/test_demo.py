@@ -1,9 +1,9 @@
-"""M7 demo tests — offline, no key, no Streamlit.
+"""Demo tests — design §8, §4.3, §2.2. Offline, no key, no Streamlit.
 
-Guards the public demo's contract and the licensing invariant: the baked
-`demo/examples.json` ships grounded + abstention examples that cite / decline
-correctly, and carries **no corpus body**. Also covers the
-citation-linking helper the UI renders with.
+Guards the published artifact's contract (§8.1 what it carries, §8.3 that the
+contract covers everything the page reads unguarded) and the licensing invariant
+(§2.2 no corpus body ever ships). Also pins §4.3: a `[n]` inside code is a
+subscript, not a citation, and the linking helper must leave it alone.
 """
 
 from __future__ import annotations

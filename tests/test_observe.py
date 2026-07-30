@@ -1,4 +1,7 @@
-"""Offline tests for the M6 observability layer.
+"""Offline tests for the observability layer — design §6.
+
+Cost from a per-model ledger (§6.1, §6.3), the rate table's treatment of a model
+it does not price (§6.2), latency percentiles, and the request Trace.
 
 Cost from a per-model token ledger, latency percentiles, usage merging, and the
 request Trace — all pure / no key / no network. The live cost numbers come out of

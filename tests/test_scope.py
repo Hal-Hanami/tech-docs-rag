@@ -1,4 +1,4 @@
-"""Tests for corpus scope — which documentation pages are in and which are out.
+"""Tests for corpus scope (design §2) — which pages are in and which are out.
 
 Scope is the decision that keeps this project a single deployable service: the
 source `llms.txt` lists ~1,557 English pages, and ~1,429 of them are the

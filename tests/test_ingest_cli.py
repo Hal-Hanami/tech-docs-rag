@@ -1,4 +1,4 @@
-"""Offline tests for the ingestion flag surface and the stages it drives.
+"""Offline tests for the ingestion flag surface and the stages it drives — design §2.
 
 Same reason `tests/test_cli.py` exists: this module holds no pipeline logic, which
 is exactly the sort of place a bug survives a full green suite. The retrieval CLI

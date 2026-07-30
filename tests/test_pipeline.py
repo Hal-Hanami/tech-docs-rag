@@ -1,4 +1,7 @@
-"""Offline tests for clean + chunk (no network).
+"""Offline tests for clean + chunk (no network) — design §2.3.
+
+The citation trail is built here: every chunk carries the page, section path and
+anchor an answer will cite, so §2.3 is either true at this stage or nowhere.
 
 The fixture is hand-authored Markdown (not Anthropic docs) so it can be
 committed without redistributing the corpus, while still exercising every MDX

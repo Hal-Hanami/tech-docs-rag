@@ -1,4 +1,4 @@
-"""Tests for manifest parsing — `llms.txt` markdown sitemap -> corpus URL list.
+"""Tests for manifest parsing (design §2) — `llms.txt` sitemap -> corpus URL list.
 
 Parsing is pure and network-free; only `fetch_llms_txt` touches the network and
 it is not exercised here. Everything below feeds the parser a literal document,

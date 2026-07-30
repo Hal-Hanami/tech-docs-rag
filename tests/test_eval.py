@@ -1,4 +1,9 @@
-"""Offline tests for the M4 eval harness.
+"""Offline tests for the eval harness — design §7, and §1.2 in practice.
+
+The whole retrieval → generate → judge → aggregate path runs here against fakes
+with no key and no network, which is what §1.2 claims. The scoring rules pinned
+are §7.1 (recall at page level), §7.3 (one retrieval, reused), §7.4 (judge only a
+real answer to an in-corpus question) and §5.4 (false abstentions counted apart).
 
 No network, no keys: scripted fakes stand in for both LLM seams (the Opus answerer
 and the Haiku judge), so the retrieval -> generate -> judge -> aggregate loop and
@@ -17,7 +22,7 @@ from rag import index as index_mod
 from rag.clients.claude import ANSWER_MODEL, JUDGE_MODEL, build_judge_user, parse_verdict
 from rag.ports import Completion, Verdict
 
-from test_store import DOCS, FakeEmbedder  # reuse the M2 corpus fixtures
+from test_store import DOCS, FakeEmbedder  # reuse the store fixtures
 
 
 class ScriptedAnswerer:

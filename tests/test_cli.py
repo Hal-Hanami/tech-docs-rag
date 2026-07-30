@@ -1,4 +1,4 @@
-"""Offline tests for the flag surface and the orchestration it drives.
+"""Offline tests for the flag surface and the orchestration it drives — design §3.2.
 
 These two layers hold no pipeline logic, which is exactly why they were the last
 place a bug hid: `--dense-only` was documented as the un-reranked baseline while

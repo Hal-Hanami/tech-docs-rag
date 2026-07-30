@@ -1,4 +1,8 @@
-"""Offline tests for M3 grounded answer generation.
+"""Offline tests for grounded answer generation — design §4 and §5.
+
+Pins the grounding rules (§4.1 sources and nothing else, §4.2 URLs withheld from
+the model, §4.4 one retrieval shared with scoring) and the abstention contract
+(§5.1 the exact sentence, §5.2 compared with `==`, §5.3 empty retrieval declines).
 
 No network, no Claude key: a `FakeAnswerer` stands in for the LLM seam so we can
 assert the retrieval -> numbered-sources prompt -> grounding logic without a real
@@ -14,7 +18,7 @@ from rag import generate as gen
 from rag import index as index_mod
 from rag.ports import Completion
 
-from test_store import DOCS, FakeEmbedder  # reuse the M2 fixtures
+from test_store import DOCS, FakeEmbedder  # reuse the store fixtures
 
 
 class FakeAnswerer:

@@ -1,4 +1,5 @@
-"""Offline tests for the demo baker — the step that writes what the public serves.
+"""Offline tests for the demo baker — design §8.2, the step that writes what the
+public serves.
 
 `demo.bake` is the only module that produces `demo/examples.json`, and until this
 file existed nothing exercised it: the artifact was checked after the fact, so a
@@ -20,7 +21,7 @@ from demo import bake
 from demo.render import IDK, validate_examples
 from rag import index as index_mod
 
-from test_store import FakeEmbedder  # reuse the M2 fixture
+from test_store import FakeEmbedder  # reuse the store fixture
 
 # Same shape as the real corpus rows, but with the http URLs the demo contract
 # requires (a citation the reader cannot click is not a citation).

@@ -1,4 +1,4 @@
-"""Tests for eval report rendering.
+"""Tests for eval report rendering — design §6.5.
 
 The property worth protecting here is that "not measured" and "measured as zero"
 never render the same way. A retrieval-only run does not generate anything, so
