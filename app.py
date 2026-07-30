@@ -182,10 +182,14 @@ else:
     cached_demo()
 
 st.divider()
+# These figures are quoted from docs/EVALUATION.md, not maintained here. A test
+# checks that each still appears in that file, so the page cannot keep claiming a
+# number the record has moved on from.
 st.caption(
-    "**Why this isn't just a wrapper** — measured retrieval (recall@1 86.4% / "
-    "recall@3 100% / MRR 0.932; +25pt recall@1 on hard queries from reranking), "
-    "grounded-or-abstain generation (hallucination suppression), and a per-model "
-    "cost trace that drove a **−23%/query** optimization (k 5→3) with the "
-    "deterministic quality metrics unchanged. Full write-up in the repo README."
+    "**Why this isn't just a wrapper** — measured retrieval (recall@1 86.4 % / "
+    "recall@3 100 % / MRR 0.932 on the core slice; 66.7 % → 91.7 % recall@1 on the "
+    "hard slice, from reranking), grounded-or-abstain generation (hallucination "
+    "suppression), and a per-model cost trace that drove a **−23 %** per-query "
+    "optimization with the deterministic metrics unchanged. "
+    f"Measurements and how to reproduce them: [docs/EVALUATION.md]({REPO_URL}/blob/main/docs/EVALUATION.md)"
 )

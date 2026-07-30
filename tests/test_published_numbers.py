@@ -119,3 +119,28 @@ def test_the_readme_headlines_come_from_the_evaluation_record():
             f"README headlines {figure!r}, which does not appear in docs/EVALUATION.md. "
             f"The record is the source; the README quotes it."
         )
+
+
+def _figures(text: str) -> list[str]:
+    """Percentages, dollars and bare decimals, with the spacing normalised away."""
+    return re.findall(r"\$?\d+(?:\.\d+)?(?: ?%)?", re.sub(r"(\d) %", r"\1%", text))
+
+
+def test_the_demo_page_quotes_the_same_record():
+    """The public page states measured figures too — the third place they could drift.
+
+    It is the shop window, so the numbers earn their place there; what they must
+    not do is outlive the record. Everything quoted in the footer has to still
+    appear in EVALUATION.md.
+    """
+    app = (ROOT / "app.py").read_text(encoding="utf-8")
+    caption = app.split("st.divider()", 1)[1]
+    quoted = {f for f in _figures(caption) if "%" in f or "." in f}
+    assert quoted, "the demo footer no longer quotes any measured figure"
+
+    record = set(_figures(EVALUATION))
+    missing = sorted(quoted - record)
+    assert not missing, (
+        f"app.py quotes {missing}, which docs/EVALUATION.md no longer contains. "
+        f"The page quotes the record; it does not keep its own copy."
+    )
