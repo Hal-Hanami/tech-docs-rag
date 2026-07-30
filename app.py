@@ -32,7 +32,7 @@ ROOT = Path(__file__).resolve().parent
 EXAMPLES_FILE = ROOT / "demo" / "examples.json"
 DB_FILE = ROOT / "data" / "index.db"
 
-REPO_URL = "https://github.com/Hal-Hanami/tech-docs-rag"  # set to your public repo
+REPO_URL = "https://github.com/Hal-Hanami/tech-docs-rag"
 
 st.set_page_config(page_title="tech-docs-rag", page_icon="📚", layout="centered")
 
