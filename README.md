@@ -21,10 +21,10 @@ costs.
 │ [2].                                                      │
 │                                                          │
 │ Sources  ✓ grounded                                      │
-│  [1] Pricing > Prompt caching            → platform.cla… │
-│  [2] Prompt caching > How it works       → platform.cla… │
-│ ── Cost $0.0341 · Latency 11.3s · trace ▸ ───────────────│
-│   generation   in=2098 out=917   $0.0334                 │
+│  [1] Pricing > … > Prompt caching        → platform.cla… │
+│  [3] Prompt caching > How it works       → platform.cla… │
+│ ── Cost $0.0335 · Latency 10.8s · trace ▸ ───────────────│
+│   generation   in=2098 out=893   $0.0328                 │
 │   rerank       total=34526       $0.0007                 │
 │   embedding    total=13          $0.0000                 │
 └──────────────────────────────────────────────────────────┘

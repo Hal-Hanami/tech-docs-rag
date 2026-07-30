@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-06-10",
+  "generated_at": "2026-07-31",
   "k": 3,
   "generation_model": "claude-opus-4-8",
   "retrieval": "hybrid (dense + BM25, RRF) + Voyage rerank-2.5-lite",
   "note": "Precomputed answers for the public demo. Contains model-written, cited prose + source URLs + measured cost/latency only — no corpus body. Re-bake with `python -m demo.bake`.",
-  "bake_cost_usd": 0.1967,
+  "bake_cost_usd": 0.2012,
   "examples": [
     {
       "question": "How does prompt caching reduce cost, and how do I enable it?",
-      "answer": "## How prompt caching reduces cost\n\nPrompt caching reuses previously processed portions of your prompt across API calls, so instead of reprocessing the same large system prompt, document, or conversation history on every request, the API reads from cache at a fraction of the standard input price [1]. When a request is sent, the system checks if a prompt prefix (up to a specified cache breakpoint) is already cached from a recent query; if found, it uses the cached version, reducing processing time and costs [3].\n\nThe pricing multipliers relative to base input token rates are [1]:\n\n| Cache operation | Multiplier | Duration |\n|:----------------|:-----------|:---------|\n| 5-minute cache write | 1.25x base input price | Cache valid for 5 minutes |\n| 1-hour cache write | 2x base input price | Cache valid for 1 hour |\n| Cache read (hit) | 0.1x base input price | Same duration as the preceding write |\n\nA cache hit costs 10% of the standard input price, so caching pays off after just one cache read for the 5-minute duration (1.25x write), or after two cache reads for the 1-hour duration (2x write) [1]. By default the cache has a 5-minute lifetime and is refreshed for no additional cost each time the cached content is used [3].\n\n## How to enable it\n\nThere are two ways to enable prompt caching [1][2]:\n\n- **Automatic caching:** Add a single `cache_control` field at the top level of your request. The system automatically manages/applies cache breakpoints to the last cacheable block and moves it forward as conversations grow. This is the recommended starting point for most use cases [1][2].\n- **Explicit cache breakpoints:** Place `cache_control` directly on individual content blocks for fine-grained control over exactly what gets cached [1][2].\n\nThe simplest way to start is automatic caching by adding `\"cache_control\": {\"type\": \"ephemeral\"}` at the top level of your request, for example [2]:\n\n```bash\ncurl https://api.anthropic.com/v1/messages \\\n -H \"content-type: application/json\" \\\n -H \"x-api-key: $ANTHROPIC_API_KEY\" \\\n -H \"anthropic-version: 2023-06-01\" \\\n -d '{\n   \"model\": \"claude-opus-4-8\",\n   \"max_tokens\": 1024,\n   \"cache_control\": {\"type\": \"ephemeral\"},\n   \"system\": \"You are an AI assistant tasked with analyzing literary works...\",\n   \"messages\": [\n     { \"role\": \"user\", \"content\": \"Analyze the major themes in Pride and Prejudice.\" }\n   ]\n }'\n```\n\nNote that prompt caching references the entire prompt — `tools`, `system`, and `messages` (in that order) — up to and including the block designated with `cache_control` [3].",
+      "answer": "## How prompt caching reduces cost\n\nPrompt caching reuses previously processed portions of your prompt across API calls, so instead of reprocessing the same large system prompt, document, or conversation history on every request, the API reads from cache at a fraction of the standard input price [1]. When a request is sent, the system checks if a prompt prefix (up to a specified cache breakpoint) is already cached from a recent query; if found, it uses the cached version, reducing processing time and cost; otherwise it processes the full prompt and caches the prefix [3].\n\nThe pricing multipliers relative to base input token rates are [1]:\n\n| Cache operation | Multiplier | Duration |\n|:---|:---|:---|\n| 5-minute cache write | 1.25x base input price | Cache valid for 5 minutes |\n| 1-hour cache write | 2x base input price | Cache valid for 1 hour |\n| Cache read (hit) | 0.1x base input price | Same duration as the preceding write |\n\nBecause a cache hit costs only 10% of the standard input price, caching pays off after just one cache read for the 5-minute duration, or after two cache reads for the 1-hour duration [1]. By default, the cache has a 5-minute lifetime and is refreshed for no additional cost each time the cached content is used [3].\n\n## How to enable it\n\nThere are two ways to enable prompt caching [1][2]:\n\n- **Automatic caching:** Add a single `cache_control` field at the top level of your request. The system automatically manages/applies cache breakpoints as conversations grow. This is the recommended starting point for most use cases [1][2].\n- **Explicit cache breakpoints:** Place `cache_control` directly on individual content blocks for fine-grained control over exactly what gets cached [1][2].\n\nThe simplest way to start is automatic caching, by adding `\"cache_control\": {\"type\": \"ephemeral\"}` at the top level of your request. For example, in Python [2]:\n\n```python\nimport anthropic\nclient = anthropic.Anthropic()\nresponse = client.messages.create(\n    model=\"claude-opus-4-8\",\n    max_tokens=1024,\n    cache_control={\"type\": \"ephemeral\"},\n    system=\"You are an AI assistant tasked with analyzing literary works. Your goal is to provide insightful commentary on themes, characters, and writing style.\",\n    messages=[\n        {\n            \"role\": \"user\",\n            \"content\": \"Analyze the major themes in 'Pride and Prejudice'.\",\n        }\n    ],\n)\nprint(response.usage.model_dump_json())\n```\n\nPrompt caching references the entire prompt — `tools`, `system`, and `messages` (in that order) — up to and including the block designated with `cache_control` [3].",
       "grounded": true,
       "sources": [
         {
@@ -34,15 +34,15 @@
         "stages": [
           [
             "embed",
-            384.9
+            338.6
           ],
           [
             "dense",
-            36.9
+            8.7
           ],
           [
             "bm25",
-            34.3
+            5.6
           ],
           [
             "fuse",
@@ -50,19 +50,19 @@
           ],
           [
             "rerank",
-            674.6
+            512.8
           ],
           [
             "generate",
-            10143.4
+            9959.5
           ]
         ],
-        "total_ms": 11274.1,
+        "total_ms": 10825.4,
         "cost_by_model": {
           "claude-opus-4-8": {
             "input_tokens": 2098,
-            "output_tokens": 917,
-            "usd": 0.033415
+            "output_tokens": 893,
+            "usd": 0.032815
           },
           "rerank-2.5-lite": {
             "total_tokens": 34526,
@@ -73,12 +73,12 @@
             "usd": 0.0
           }
         },
-        "total_usd": 0.034106
+        "total_usd": 0.033506
       }
     },
     {
       "question": "How does tool use work with the Claude Messages API?",
-      "answer": "## How Tool Use Works with the Claude Messages API\n\n**Core concept:** Tool use lets Claude call functions you define (client tools) or that Anthropic provides (server tools). Claude decides when to call a tool based on the user's request and the tool's description, then returns a structured call that your application executes (client tools) or that Anthropic executes (server tools) [1].\n\n**Defining tools:** You add tools to your API request via the `tools` parameter. For server tools, you specify a type and name (e.g., `{\"type\": \"web_search_20260209\", \"name\": \"web_search\"}`), and Anthropic handles execution [1]. For client tools, you provide a name, description, and `input_schema` defining the expected parameters [3].\n\n**The agentic loop (for client/executed tools):**\n1. Add the tool(s) and a user prompt to your API request [2].\n2. Claude assesses whether a tool can help with the query, and if so, constructs a properly formatted tool use request [2].\n3. The API response has a `stop_reason` of `tool_use`, signaling that Claude is calling a tool and expects you to execute it [2][3].\n4. On your end, extract the tool name and input from Claude's request and execute the tool [2][3].\n5. Continue the conversation with a new `user` message containing a `tool_result` content block [2].\n6. Claude analyzes the result to decide whether more tool use is needed (responding with another `tool_use` stop reason) or whether the task is complete, in which case it crafts a text response [2].\n\nThe repetition of steps where Claude responds with a tool use request and your application responds with results—without user input—is called the \"agent loop\" [2].\n\n**Simplifying implementation:** For most tool use implementations, you can use the tool runner, which automatically handles tool execution, result formatting, and conversation management [3].",
+      "answer": "Tool use with the Claude Messages API lets Claude call functions you define (client tools) or that Anthropic provides (server tools). Claude decides when to call a tool based on the user's request and the tool's description, then returns a structured call that your application executes for client tools, or that Anthropic executes for server tools [1].\n\n**Basic setup:**\n- Add tools to your API request via the `tools` parameter, along with a user prompt [1][2]. For example, a server tool like web search is defined as `{\"type\": \"web_search_20260209\", \"name\": \"web_search\"}` [1], while a client tool is defined with a `name`, `description`, and `input_schema` [3].\n\n**The agent loop (for client tools):**\n1. Claude assesses whether a tool can help with the user's query, and if so constructs a properly formatted tool use request [2].\n2. The API response has a `stop_reason` of `tool_use`, signaling a tool use request [2][3].\n3. On your end, extract the tool name and input from Claude's request and execute the tool [2][3].\n4. Continue the conversation with a new `user` message containing a `tool_result` content block [2].\n5. Claude analyzes the tool results to determine if more tool use is needed or the task is complete. If another tool is needed, it responds with another `tool_use` stop reason and the cycle repeats; otherwise it crafts a text response [2].\n\nThis repetition of tool use requests and result responses without user input is called the \"agent loop\" [2]. For most implementations, you can use the tool runner, which automatically handles tool execution, result formatting, and conversation management [3]. For server tools, Anthropic handles execution directly [1].",
       "grounded": true,
       "sources": [
         {
@@ -104,35 +104,35 @@
         "stages": [
           [
             "embed",
-            296.6
+            291.4
           ],
           [
             "dense",
-            8.6
+            9.1
           ],
           [
             "bm25",
-            13.5
+            5.8
           ],
           [
             "fuse",
-            0.1
+            0.2
           ],
           [
             "rerank",
-            870.5
+            808.0
           ],
           [
             "generate",
-            11393.0
+            7291.0
           ]
         ],
-        "total_ms": 12582.4,
+        "total_ms": 8405.5,
         "cost_by_model": {
           "claude-opus-4-8": {
             "input_tokens": 1744,
-            "output_tokens": 599,
-            "usd": 0.023695
+            "output_tokens": 546,
+            "usd": 0.02237
           },
           "rerank-2.5-lite": {
             "total_tokens": 46657,
@@ -143,12 +143,12 @@
             "usd": 0.0
           }
         },
-        "total_usd": 0.024628
+        "total_usd": 0.023303
       }
     },
     {
       "question": "What is extended thinking and when should I use it?",
-      "answer": "Extended thinking gives Claude enhanced reasoning capabilities for complex tasks, while providing varying levels of transparency into its step-by-step thought process before it delivers its final answer [2].\n\nYou should use extended thinking for particularly complex tasks that benefit from step-by-step reasoning, like math, coding, and analysis [1].",
+      "answer": "Extended thinking gives Claude enhanced reasoning capabilities for complex tasks, providing varying levels of transparency into its step-by-step thought process before it delivers its final answer [2].\n\nYou should use extended thinking for particularly complex tasks that benefit from step-by-step reasoning, such as math, coding, and analysis [1].",
       "grounded": true,
       "sources": [
         {
@@ -174,15 +174,15 @@
         "stages": [
           [
             "embed",
-            300.8
+            280.7
           ],
           [
             "dense",
-            5.9
+            5.6
           ],
           [
             "bm25",
-            6.7
+            4.6
           ],
           [
             "fuse",
@@ -190,14 +190,14 @@
           ],
           [
             "rerank",
-            698.2
+            579.5
           ],
           [
             "generate",
-            2394.6
+            2531.4
           ]
         ],
-        "total_ms": 3406.3,
+        "total_ms": 3401.8,
         "cost_by_model": {
           "claude-opus-4-8": {
             "input_tokens": 1671,
@@ -218,7 +218,7 @@
     },
     {
       "question": "How do I stream a response from the Messages API?",
-      "answer": "To stream a response from the Messages API, set `\"stream\": true` when creating a Message. The response is then incrementally streamed using server-sent events (SSE) [1].\n\n**Raw HTTP (cURL):**\n```bash\ncurl https://api.anthropic.com/v1/messages \\\n  --header \"anthropic-version: 2023-06-01\" \\\n  --header \"content-type: application/json\" \\\n  --header \"x-api-key: $ANTHROPIC_API_KEY\" \\\n  --data '{\n    \"model\": \"claude-opus-4-8\",\n    \"messages\": [{\"role\": \"user\", \"content\": \"Hello\"}],\n    \"max_tokens\": 256,\n    \"stream\": true\n  }'\n```\n[3]\n\n**Python SDK:**\n```python\nimport anthropic\nclient = anthropic.Anthropic()\n\nwith client.messages.stream(\n    model=\"claude-opus-4-8\",\n    messages=[{\"role\": \"user\", \"content\": \"Hello\"}],\n    max_tokens=256,\n) as stream:\n    for text in stream.text_stream:\n        print(text, end=\"\", flush=True)\n```\n[3]\n\n**TypeScript SDK:**\n```typescript\nimport Anthropic from \"@anthropic-ai/sdk\";\nconst client = new Anthropic();\n\nconst stream = client.messages.stream({\n  model: \"claude-opus-4-8\",\n  messages: [{ role: \"user\", content: \"Hello\" }],\n  max_tokens: 256\n});\n\nfor await (const event of stream) {\n  if (event.type === \"content_block_delta\" && event.delta.type === \"text_delta\") {\n    process.stdout.write(event.delta.text);\n  }\n}\n```\n[3]\n\nSDKs are also available for C# (`client.Messages.CreateStreaming`) and Go (`client.Messages.NewStreaming`) [3].",
+      "answer": "To stream a response from the Messages API, set `\"stream\": true` when creating a Message. This incrementally streams the response using server-sent events (SSE) [1].\n\n**Basic streaming request (cURL):**\n```bash\ncurl https://api.anthropic.com/v1/messages \\\n  --header \"anthropic-version: 2023-06-01\" \\\n  --header \"content-type: application/json\" \\\n  --header \"x-api-key: $ANTHROPIC_API_KEY\" \\\n  --data \\\n  '{\n    \"model\": \"claude-opus-4-8\",\n    \"messages\": [{\"role\": \"user\", \"content\": \"Hello\"}],\n    \"max_tokens\": 256,\n    \"stream\": true\n  }'\n```\n[3]\n\n**Python SDK:**\n```python\nimport anthropic\nclient = anthropic.Anthropic()\n\nwith client.messages.stream(\n    model=\"claude-opus-4-8\",\n    messages=[{\"role\": \"user\", \"content\": \"Hello\"}],\n    max_tokens=256,\n) as stream:\n    for text in stream.text_stream:\n        print(text, end=\"\", flush=True)\n```\n[3]\n\n**TypeScript SDK:**\n```typescript\nimport Anthropic from \"@anthropic-ai/sdk\";\nconst client = new Anthropic();\n\nconst stream = client.messages.stream({\n  model: \"claude-opus-4-8\",\n  messages: [{ role: \"user\", content: \"Hello\" }],\n  max_tokens: 256\n});\nfor await (const event of stream) {\n  if (event.type === \"content_block_delta\" && event.delta.type === \"text_delta\") {\n    process.stdout.write(event.delta.text);\n  }\n}\n```\n[3]\n\nSDKs are also available for C# and Go, which use `CreateStreaming` and `NewStreaming` respectively [3].",
       "grounded": true,
       "sources": [
         {
@@ -244,35 +244,35 @@
         "stages": [
           [
             "embed",
-            314.5
+            289.3
           ],
           [
             "dense",
-            6.8
+            5.0
           ],
           [
             "bm25",
-            8.0
+            5.1
           ],
           [
             "fuse",
-            0.2
+            0.1
           ],
           [
             "rerank",
-            834.6
+            782.9
           ],
           [
             "generate",
-            6484.5
+            7131.4
           ]
         ],
-        "total_ms": 7648.5,
+        "total_ms": 8213.8,
         "cost_by_model": {
           "claude-opus-4-8": {
             "input_tokens": 2652,
-            "output_tokens": 607,
-            "usd": 0.028435
+            "output_tokens": 595,
+            "usd": 0.028135
           },
           "rerank-2.5-lite": {
             "total_tokens": 49810,
@@ -283,12 +283,12 @@
             "usd": 0.0
           }
         },
-        "total_usd": 0.029431
+        "total_usd": 0.029131
       }
     },
     {
       "question": "How do I get structured JSON output from Claude?",
-      "answer": "To get structured JSON output from Claude, use the **JSON outputs** feature via the `output_config.format` parameter [1].\n\n## How it works\n\n1. **Create a JSON schema** describing the structure you want Claude to follow, using standard JSON Schema format [3].\n2. **Include the `output_config.format` parameter** in your API request, with `type: \"json_schema\"` and your schema definition [3].\n3. Claude's response will be valid JSON matching your schema, returned in `response.content[0].text` [3].\n\n## Example (Python)\n\n```python\nimport anthropic\nclient = anthropic.Anthropic()\n\nresponse = client.messages.create(\n    model=\"claude-opus-4-8\",\n    max_tokens=1024,\n    messages=[\n        {\"role\": \"user\", \"content\": \"Extract the key information from this email: John Smith (john@example.com) is interested in our Enterprise plan.\"}\n    ],\n    output_config={\n        \"format\": {\n            \"type\": \"json_schema\",\n            \"schema\": {\n                \"type\": \"object\",\n                \"properties\": {\n                    \"name\": {\"type\": \"string\"},\n                    \"email\": {\"type\": \"string\"},\n                    \"plan_interest\": {\"type\": \"string\"},\n                    \"demo_requested\": {\"type\": \"boolean\"},\n                },\n                \"required\": [\"name\", \"email\", \"plan_interest\", \"demo_requested\"],\n                \"additionalProperties\": False,\n            }\n        }\n    },\n)\nprint(response.content[0].text)\n```\n\nThis produces valid JSON matching your schema [3].\n\n## Additional notes\n\n- You can also combine JSON outputs with **strict tool use** (`strict: true`) in the same request—JSON outputs control the response format while strict tool use guarantees valid tool parameters [1][2].\n- Structured outputs are generally available on the Claude API for models including Claude Opus 4.8, Claude Opus 4.7, Claude Opus 4.6, Claude Sonnet 4.6, Claude Sonnet 4.5, Claude Opus 4.5, and Claude Haiku 4.5 [1].\n- If migrating from beta, note that `output_format` has moved to `output_config.format`, and beta headers are no longer required [1].",
+      "answer": "# Getting Structured JSON Output from Claude\n\nUse the **JSON outputs** feature via the `output_config.format` parameter to constrain Claude's response to a specific JSON schema, ensuring valid, parseable output [1].\n\n## How it works\n\n1. **Create a JSON schema** describing the structure you want Claude to follow, using standard JSON Schema format (with some limitations) [3].\n2. **Include the `output_config.format` parameter** in your API request with `type: \"json_schema\"` and your schema definition [3].\n3. Claude's response will be valid JSON matching your schema, returned in `response.content[0].text` [3].\n\n## Example (Python)\n\n```python\nimport anthropic\n\nclient = anthropic.Anthropic()\n\nresponse = client.messages.create(\n    model=\"claude-opus-4-8\",\n    max_tokens=1024,\n    messages=[\n        {\n            \"role\": \"user\",\n            \"content\": \"Help me plan a trip to Paris departing May 15, 2026\",\n        }\n    ],\n    output_config={\n        \"format\": {\n            \"type\": \"json_schema\",\n            \"schema\": {\n                \"type\": \"object\",\n                \"properties\": {\n                    \"summary\": {\"type\": \"string\"},\n                    \"next_steps\": {\"type\": \"array\", \"items\": {\"type\": \"string\"}},\n                },\n                \"required\": [\"summary\", \"next_steps\"],\n                \"additionalProperties\": False,\n            },\n        }\n    },\n)\nprint(response)\n```\n\nThis defines an object schema with required properties and returns matching JSON [2].\n\n## Additional notes\n\n- **Combine with strict tool use**: You can pair JSON outputs with strict tool use (`strict: true`) to get both guaranteed-valid tool parameters and structured JSON responses—useful for agentic workflows [1][2].\n- **Availability**: Structured outputs are generally available on the Claude API for models including Claude Opus 4.8, Claude Opus 4.7/4.6/4.5, Claude Sonnet 4.6/4.5, and Claude Haiku 4.5 [1].\n- **Migration note**: If migrating from beta, the `output_format` parameter has moved to `output_config.format`, and beta headers are no longer required [1].",
       "grounded": true,
       "sources": [
         {
@@ -314,15 +314,15 @@
         "stages": [
           [
             "embed",
-            292.5
+            297.6
           ],
           [
             "dense",
-            5.5
+            5.1
           ],
           [
             "bm25",
-            6.9
+            4.6
           ],
           [
             "fuse",
@@ -330,19 +330,19 @@
           ],
           [
             "rerank",
-            951.0
+            763.7
           ],
           [
             "generate",
-            8067.3
+            8403.0
           ]
         ],
-        "total_ms": 9323.3,
+        "total_ms": 9474.1,
         "cost_by_model": {
           "claude-opus-4-8": {
             "input_tokens": 2627,
-            "output_tokens": 722,
-            "usd": 0.031185
+            "output_tokens": 711,
+            "usd": 0.03091
           },
           "rerank-2.5-lite": {
             "total_tokens": 42966,
@@ -353,12 +353,12 @@
             "usd": 0.0
           }
         },
-        "total_usd": 0.032045
+        "total_usd": 0.03177
       }
     },
     {
       "question": "How does the Message Batches API work, and what does it cost?",
-      "answer": "# Message Batches API\n\n**How it works:** The Message Batches API lets you asynchronously process large volumes of Messages requests by submitting multiple requests together instead of one at a time [3]. This approach is well-suited to tasks that do not require immediate responses, such as processing large volumes of data, running large-scale evaluations, or optimizing for cost efficiency [3].\n\nBatches may take up to 24 hours to process, though most finish in less than 1 hour [1][3]. Asynchronous processing requires server-side storage of both inputs and outputs until batch completion and result retrieval [1]. Request and response data is stored for up to 29 days after batch creation, and you can delete a batch at any time using the `DELETE /v1/messages/batches/{batch_id}` endpoint (cancel in-progress batches first) [1].\n\nWhen you retrieve results, each request has a `result` field indicating whether it `succeeded`, `errored`, was `canceled`, or `expired`, with additional error information for errored results [1]. The API supports nearly all Messages API features, except a few parameters (`stream`, `speed`, `store`, `previous_thread_event_id`, `cache_hint`, `context_hint`, `max_tokens: 0`, and `research_preview_2026_02`) [1]. Once submitted, a batch cannot be modified—you must cancel it and submit a new one [1]. Note that this feature is **not** eligible for Zero Data Retention (ZDR) [3].\n\n**Cost:** The Batches API charges all usage at 50% of standard API prices, applying to input, output, and special tokens [1][2]. Example pricing per million tokens (batch input / batch output) [2]:\n\n- Claude Opus 4.8, 4.7, 4.6, 4.5: $2.50 / $12.50 [2]\n- Claude Sonnet 4.6, 4.5: $1.50 / $7.50 [2]\n- Claude Haiku 4.5: $0.50 / $2.50 [2]\n- Claude Haiku 3.5: $0.40 / $2 [2]\n\nUsage of the Batches API does not affect Messages API rate limits [1].",
+      "answer": "## How it works\n\nThe Message Batches API lets you asynchronously process large volumes of Messages requests by submitting multiple requests together instead of one at a time [3]. It's well-suited to tasks that don't require immediate responses, particularly when processing large volumes of data, running large-scale evaluations, or optimizing for cost efficiency [3].\n\nKey operational details:\n- **Processing time:** Batches may take up to 24 hours, though many finish sooner (most in less than 1 hour). Actual time depends on batch size, current demand, and your request volume, and a batch can expire without completing within 24 hours [1][3].\n- **Feature support:** It supports nearly all features of the Messages API, including most beta features, except a few parameters: `stream`, `speed`, `store`, `previous_thread_event_id`, `cache_hint`, `context_hint`, `max_tokens: 0`, and `research_preview_2026_02` [1].\n- **No modifications:** Once submitted, a batch cannot be modified—you must cancel it and submit a new one [1].\n- **Results/errors:** When retrieving results, each request has a `result` field indicating whether it `succeeded`, `errored`, was `canceled`, or `expired`, with additional info for errors [1].\n- **Rate limits:** The Batches API has its own HTTP request-based rate limits plus limits on requests needing processing, and its usage does not affect Messages API rate limits [1].\n- **Data retention:** Request and response data is stored for up to 29 days after batch creation; you can delete a batch via `DELETE /v1/messages/batches/{batch_id}` (cancel an in-progress batch first) [1]. This feature is **not** eligible for Zero Data Retention (ZDR) [3].\n\n## Cost\n\nThe Batches API offers a **50% discount** on all usage compared to standard API prices, applying to input tokens, output tokens, and any special tokens [1][2][3].\n\nBatch pricing per model (input / output per MTok) [2]:\n- Claude Opus 4.8 / 4.7 / 4.6 / 4.5: $2.50 / $12.50\n- Claude Opus 4.1 (deprecated) / Opus 4 (deprecated): $7.50 / $37.50\n- Claude Sonnet 4.6 / 4.5 / Sonnet 4 (deprecated): $1.50 / $7.50\n- Claude Haiku 4.5: $0.50 / $2.50\n- Claude Haiku 3.5 (retired, except on Bedrock and Vertex AI): $0.40 / $2",
       "grounded": true,
       "sources": [
         {
@@ -384,15 +384,15 @@
         "stages": [
           [
             "embed",
-            304.8
+            287.5
           ],
           [
             "dense",
-            5.6
+            6.0
           ],
           [
             "bm25",
-            5.4
+            5.7
           ],
           [
             "fuse",
@@ -400,19 +400,19 @@
           ],
           [
             "rerank",
-            762.2
+            680.1
           ],
           [
             "generate",
-            8184.0
+            13295.8
           ]
         ],
-        "total_ms": 9262.1,
+        "total_ms": 14275.2,
         "cost_by_model": {
           "claude-opus-4-8": {
             "input_tokens": 2074,
-            "output_tokens": 707,
-            "usd": 0.028045
+            "output_tokens": 863,
+            "usd": 0.031945
           },
           "rerank-2.5-lite": {
             "total_tokens": 39606,
@@ -423,12 +423,12 @@
             "usd": 0.0
           }
         },
-        "total_usd": 0.028837
+        "total_usd": 0.032737
       }
     },
     {
       "question": "How can I count the tokens in a request before I send it?",
-      "answer": "You can use the **token counting endpoint** (`/v1/messages/count_tokens`) to determine the number of tokens in a message before sending it to Claude [1][3]. This helps you proactively manage rate limits and costs, make model routing decisions, and optimize prompt length [1].\n\n**How it works:**\n- The endpoint accepts the same structured list of inputs used for creating a message, including support for system prompts, tools, images, and PDFs [3].\n- The response contains the total number of input tokens [3].\n- All active models support token counting [3].\n\n**Example (Python):**\n```python\nresponse = client.beta.messages.count_tokens(\n    model=\"claude-opus-4-8\",\n    messages=[{\"role\": \"user\", \"content\": \"...\"}],\n    tools=[...],  # Your tool definitions\n)\n```\n[2]\n\n**Example (cURL):** Send a POST request to `https://api.anthropic.com/v1/messages/count_tokens` with your API key, anthropic-version header, and the message body [2].\n\nNote that the token count should be considered an **estimate** — the actual number of input tokens used may differ by a small amount, and counts may include tokens added automatically for system optimizations (which you are not billed for) [3].",
+      "answer": "You can use the **token counting endpoint** to determine the number of tokens in a message before sending it to Claude [1]. This helps you proactively manage rate limits and costs, make smart model routing decisions, and optimize prompt length [1].\n\n**How it works:**\n- The endpoint (`/v1/messages/count_tokens`) accepts the same structured list of inputs used to create a message, including support for system prompts, tools, images, and PDFs [3][2]. The response contains the total number of input tokens [3].\n- All active models support token counting [3].\n\n**Example (Python):**\n```python\nresponse = client.beta.messages.count_tokens(\n    model=\"claude-opus-4-8\",\n    messages=[{\"role\": \"user\", \"content\": \"...\"}],\n    tools=[...],\n)\nprint(response.input_tokens)\n```\n(adapted from [2])\n\n**Example (cURL):**\n```bash\ncurl https://api.anthropic.com/v1/messages/count_tokens \\\n  --header \"x-api-key: $ANTHROPIC_API_KEY\" \\\n  --header \"anthropic-version: 2023-06-01\" \\\n  --header \"content-type: application/json\" \\\n  --data '{ \"model\": \"...\", \"messages\": [...] }'\n```\n(adapted from [2])\n\n**Important notes:**\n- The token count should be considered an **estimate** — the actual number used when creating a message may differ by a small amount [3].\n- Counts may include tokens added automatically by Anthropic for system optimizations, but you are **not billed** for system-added tokens; billing reflects only your content [3].",
       "grounded": true,
       "sources": [
         {
@@ -454,15 +454,15 @@
         "stages": [
           [
             "embed",
-            301.8
+            288.6
           ],
           [
             "dense",
-            5.2
+            4.9
           ],
           [
             "bm25",
-            7.3
+            5.3
           ],
           [
             "fuse",
@@ -470,19 +470,19 @@
           ],
           [
             "rerank",
-            868.0
+            775.3
           ],
           [
             "generate",
-            5827.7
+            7176.4
           ]
         ],
-        "total_ms": 7010.1,
+        "total_ms": 8250.6,
         "cost_by_model": {
           "claude-opus-4-8": {
             "input_tokens": 1642,
-            "output_tokens": 419,
-            "usd": 0.018685
+            "output_tokens": 522,
+            "usd": 0.02126
           },
           "rerank-2.5-lite": {
             "total_tokens": 50103,
@@ -493,7 +493,7 @@
             "usd": 0.0
           }
         },
-        "total_usd": 0.019687
+        "total_usd": 0.022262
       }
     },
     {
@@ -509,30 +509,30 @@
         },
         {
           "n": 2,
-          "section_path": "Tool search tool > Quick start",
-          "page_title": "Tool search tool",
-          "url": "https://platform.claude.com/docs/en/agents-and-tools/tool-use/tool-search-tool#quick-start"
-        },
-        {
-          "n": 3,
           "section_path": "Tutorial: Build a tool-using agent > Ring 1: Single tool, single turn",
           "page_title": "Tutorial: Build a tool-using agent",
           "url": "https://platform.claude.com/docs/en/agents-and-tools/tool-use/build-a-tool-using-agent#ring-1-single-tool-single-turn"
+        },
+        {
+          "n": 3,
+          "section_path": "Tool Runner (SDK) > Basic usage",
+          "page_title": "Tool Runner (SDK)",
+          "url": "https://platform.claude.com/docs/en/agents-and-tools/tool-use/tool-runner#basic-usage"
         }
       ],
       "trace": {
         "stages": [
           [
             "embed",
-            300.3
+            284.4
           ],
           [
             "dense",
-            6.0
+            5.0
           ],
           [
             "bm25",
-            5.4
+            4.2
           ],
           [
             "fuse",
@@ -540,30 +540,30 @@
           ],
           [
             "rerank",
-            790.6
+            603.6
           ],
           [
             "generate",
-            2101.0
+            4126.4
           ]
         ],
-        "total_ms": 3203.4,
+        "total_ms": 5023.6,
         "cost_by_model": {
           "claude-opus-4-8": {
-            "input_tokens": 2982,
+            "input_tokens": 3087,
             "output_tokens": 15,
-            "usd": 0.015285
+            "usd": 0.01581
           },
           "rerank-2.5-lite": {
-            "total_tokens": 50514,
-            "usd": 0.00101
+            "total_tokens": 50269,
+            "usd": 0.001005
           },
           "voyage-4-lite": {
             "total_tokens": 10,
             "usd": 0.0
           }
         },
-        "total_usd": 0.016295
+        "total_usd": 0.016816
       }
     }
   ]
