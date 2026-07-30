@@ -70,26 +70,42 @@ python -m pytest -q
 
 Tests must pass without `VOYAGE_API_KEY` or `ANTHROPIC_API_KEY` set.
 
-### Four rules the build enforces
+### Five rules the build enforces
 
-Every defect this project has shipped was outside the tests' reach rather than a
-failure inside it. A flag whose help text disagreed with its behaviour lived in a
-module at 0% coverage; a package move broke a downstream consumer that no test on
-either side imported. So the rules below are checked by CI, not by good intentions.
+Most defects this project has shipped were not coding errors. They were
+**invariants nobody had written down** — that an answer may contain code and code
+contains brackets; that `rag` is an interface another repository imports; that the
+two ablation flags are independent. When a rule is unwritten, the implementation
+and its tests get written from the same missing understanding, and the tests agree
+with the bug. So the rules below are checked by CI, not by good intentions.
 
-1. **No module sits at 0% coverage.** A file nothing imports is a file nothing
+1. **Every numbered section of [`docs/DESIGN.md`](docs/DESIGN.md) is pinned by a
+   test.** That document states what must be true; a test naming the section is
+   what keeps it true. A section nothing cites is a rule the next change will break
+   without noticing. Citing `§4.3` counts as citing `§4`.
+2. **No module sits at 0% coverage.** A file nothing imports is a file nothing
    checks. Entry points count: `python -m rag` is a documented command, so
    something must prove it resolves.
-2. **A number in the documentation is tied to something that produces it.** Either
-   a reproduction command printed beside it, or a test that re-derives it —
-   `tests/test_published_numbers.py` reads the cost table out of `README.md` and
-   rebuilds it from `rag/observe.py`, so a rate change cannot quietly make the
-   README wrong. The test count is checked the same way.
-3. **`tests/test_public_api.py` is the contract with other repositories.** Anything
+3. **A published number is tied to something that produces it.** Either a
+   reproduction command printed beside it in
+   [`docs/EVALUATION.md`](docs/EVALUATION.md), or a test that re-derives it —
+   `tests/test_published_numbers.py` reads the cost table out of that file and
+   rebuilds it from `rag/observe.py`, so a rate change cannot quietly make it wrong.
+   The README quotes a few headline figures; those are checked against the record
+   for the same reason, as is the test count.
+4. **`tests/test_public_api.py` is the contract with other repositories.** Anything
    another project imports from `rag` is pinned there. Moving it is fine; moving it
    without updating that file in the same commit is how a consumer breaks silently.
-4. **A restructuring must be shown not to change behaviour.** Parse both trees,
+5. **A restructuring must be shown not to change behaviour.** Parse both trees,
    strip docstrings, and compare the moved functions with `ast.dump`. Identical
    output is evidence; "it was only a move" is not. What survives that check can be
    committed as `refactor`; what does not is a `feat` or a `fix` and needs its own
    reasoning in the body.
+
+### Where a sentence belongs
+
+One concern per file. When in doubt: **the reason one module needs to be read**
+goes in its docstring; **a promise that spans modules** goes in `docs/DESIGN.md`
+with a section number; **a number that came out of a run** goes in
+`docs/EVALUATION.md` with its date and reproduction command. The README is the
+entry point and quotes the other three rather than repeating them.
