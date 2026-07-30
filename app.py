@@ -58,14 +58,14 @@ def render_result(answer: str, sources: list[dict], grounded: bool, trace: dict)
             "Hallucination suppression you can see."
         )
 
-    # The M6 trace: what this one request cost and where the time went.
+    # The trace (design §6): what this one request cost and where the time went.
     total_s = trace["total_ms"] / 1000
     cost = trace["total_usd"]
     c1, c2, c3 = st.columns(3)
     c1.metric("Cost (this query)", f"${cost:.4f}")
     c2.metric("Latency", f"{total_s:.1f}s")
     c3.metric("Citations", str(len(sources)))
-    with st.expander("🔎 trace — per-stage latency + per-model cost (M6)"):
+    with st.expander("🔎 trace — per-stage latency + per-model cost"):
         stages = " · ".join(f"{name} {ms:.0f}ms" for name, ms in trace["stages"])
         st.markdown(f"**Stages:** {stages}")
         rows = ["| model | tokens | USD |", "|---|---|---|"]

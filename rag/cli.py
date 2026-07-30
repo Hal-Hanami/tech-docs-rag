@@ -26,7 +26,7 @@ def _add_retrieval_flags(p: argparse.ArgumentParser) -> None:
     """The two ablation toggles, each dropping exactly one retrieval stage.
 
     They are independent by design, which makes all four combinations
-    measurable on one index. The M2-era baseline (no BM25, no reranker) is both
+    measurable on one index (design §3.2). The un-reranked baseline is both
     flags together — `--dense-only` on its own still reranks, and the help text
     says so because the earlier wording implied otherwise and produced a
     reproduction command that reported the wrong configuration.

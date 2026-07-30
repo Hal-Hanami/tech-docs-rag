@@ -1,15 +1,15 @@
-"""Bake the cached public demo (M7).
+"""Bake the cached public demo — design §8.
 
 Runs the real `rag ask` pipeline over a curated set of questions and writes
 `demo/examples.json` — for each question: the grounded answer, its citations
 (`section_path` + deep-link URL, **never the chunk body**), the grounded/abstained
-flag, and the M6 trace (per-stage latency + per-model token cost). The public
+flag, and the trace (§6: per-stage latency + per-model token cost). The public
 Streamlit app (`app.py`) serves these precomputed entries, so the public URL
 makes **zero LLM calls** and ships **no `index.db`**: free, always-on, no key on
 the host, and no corpus redistribution.
 
 The numbers in the demo are therefore *real measured* numbers from one honest run
-at the M6-optimized `k=3`, not mock-ups.
+at the optimized `k=3`, not mock-ups.
 
 Re-bake when the corpus or models change (needs VOYAGE + ANTHROPIC keys in
 `.env` and a built `data/index.db`):

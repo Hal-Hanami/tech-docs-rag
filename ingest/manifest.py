@@ -5,7 +5,7 @@ carry the `.md` suffix, e.g.
 
     - [Streaming](https://platform.claude.com/docs/en/build-with-claude/streaming.md) - ...
 
-so we just parse the links, keep English docs pages, apply the M1 scope
+so we just parse the links, keep English docs pages, apply the corpus scope (design §2)
 (`scope.in_scope`), dedupe, and emit a plain URL list. No `.md` needs to be
 appended — the links are already in `.md` form.
 """

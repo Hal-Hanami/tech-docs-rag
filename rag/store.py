@@ -2,10 +2,10 @@
 
 Tables joined by rowid:
   - `vec_chunks`  : a vec0 virtual table holding the float[dim] embeddings (dense)
-  - `fts_chunks`  : an FTS5 virtual table over the chunk text (BM25 / keyword, M5)
+  - `fts_chunks`  : an FTS5 virtual table over the chunk text (BM25 / keyword)
   - `chunks`      : a plain table holding the citable metadata + chunk text
 A separate `meta` key/value table records the embedding model and dim so the
-index is self-describing. Both retrievers live in one SQLite file, so the M5
+index is self-describing. Both retrievers live in one SQLite file, so the
 hybrid (dense + BM25) needs no second service and no extra infrastructure.
 """
 
@@ -18,7 +18,7 @@ from typing import Any, Mapping
 
 import sqlite_vec
 
-# Metadata columns mirrored from chunks.jsonl (the citation trail from M1).
+# Metadata columns mirrored from chunks.jsonl (the citation trail, design §2.3).
 _META_COLS = ("chunk_id", "url", "source_url", "page_title", "section_path", "anchor", "text")
 
 
@@ -40,7 +40,7 @@ def create(db: sqlite3.Connection, dim: int) -> None:
         f"CREATE VIRTUAL TABLE vec_chunks USING vec0("
         f"embedding float[{dim}] distance_metric=cosine)"
     )
-    # BM25 keyword index over the same chunks (M5). `porter` stemming lets a query
+    # BM25 keyword index over the same chunks. `porter` stemming lets a query
     # for "cache" match "caching"; the index keeps its own copy of the text (the
     # corpus is small, so the few MB beat the footguns of external-content sync).
     db.execute(
@@ -95,7 +95,7 @@ def knn(db: sqlite3.Connection, query_embedding: list[float], k: int) -> list[di
 
 
 def bm25_search(db: sqlite3.Connection, match_query: str, k: int) -> list[dict[str, Any]]:
-    """Return the top-k chunks by BM25 keyword relevance (M5), with metadata.
+    """Return the top-k chunks by BM25 keyword relevance, with metadata.
 
     `match_query` is an FTS5 MATCH expression (see search.fts_match_query). FTS5's
     bm25() returns a negative score where *more negative = more relevant*, so

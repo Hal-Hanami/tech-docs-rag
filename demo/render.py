@@ -1,4 +1,4 @@
-"""Pure helpers for the M7 demo — no Streamlit import, so they're unit-testable
+"""Pure helpers for the public demo (design §8) — no Streamlit import, so unit-testable
 offline (`tests/test_demo.py`) alongside the rest of the suite.
 
 `link_citations` is the visible payoff of grounding (each `[n]` becomes a link to

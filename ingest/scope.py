@@ -1,7 +1,7 @@
 """Which documentation pages belong in the corpus.
 
 The Claude docs `llms.txt` lists 1,557 English pages, but 1,429 of those are the
-per-language API reference (Python / TypeScript / Go / ...). M1 deliberately
+per-language API reference (Python / TypeScript / Go / ...). This corpus deliberately
 narrows to the *core* "Build with Claude" feature docs plus the tool-use family,
 so the corpus lands in the design's "hundreds–few thousand chunks" target and
 stays a single, deployable service.
@@ -73,7 +73,7 @@ def page_path(url: str) -> str | None:
 
 
 def in_scope(url: str) -> bool:
-    """True if `url` is an English docs page inside the M1 corpus scope."""
+    """True if `url` is an English docs page inside the corpus scope (design §2)."""
     path = page_path(url)
     if path is None:
         return False

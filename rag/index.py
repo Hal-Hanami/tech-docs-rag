@@ -13,7 +13,7 @@ from .ports import Embedder
 
 def _read_jsonl(path: Path, limit: int = 0) -> list[dict[str, Any]]:
     if not path.exists():
-        raise SystemExit(f"{path} not found — run the M1 ingest first (`python -m ingest all`).")
+        raise SystemExit(f"{path} not found — run the ingest step first (`python -m ingest all`).")
     rows = [json.loads(ln) for ln in path.read_text(encoding="utf-8").splitlines() if ln.strip()]
     return rows[:limit] if limit else rows
 

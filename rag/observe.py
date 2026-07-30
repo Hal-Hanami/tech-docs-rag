@@ -1,4 +1,4 @@
-"""Cross-cutting: observability — tracing, token/cost accounting, latency (M6).
+"""Cross-cutting: observability — tracing, token/cost accounting, latency. Design §6.
 
 The cross-cutting concern: make a request explainable after
 the fact (which stages ran, how long each took, how many tokens per model) and

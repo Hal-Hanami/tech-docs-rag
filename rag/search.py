@@ -1,18 +1,18 @@
-"""Stage: retrieval — dense, hybrid (dense + BM25), and reranked (M2 + M5).
+"""Stage: retrieval — dense, hybrid (dense + BM25), and reranked. Design §3.
 
 The pipeline:
   [2] hybrid  : dense kNN (sqlite-vec) ∪ BM25 (FTS5), fused by RRF
   [3] rerank  : a cross-encoder reorders the fused pool against the query
 
-`search()` is the single entry point; `hybrid` and `reranker` toggle the M5
+`search()` is the single entry point; `hybrid` and `reranker` toggle the
 stages so the eval harness can measure before→after on one index:
-  - dense only          : hybrid=False, reranker=None        (the M2 baseline)
+  - dense only          : hybrid=False, reranker=None        (the baseline)
   - hybrid              : hybrid=True,  reranker=None
-  - hybrid + rerank     : hybrid=True,  reranker=<Reranker>   (the M5 product)
+  - hybrid + rerank     : hybrid=True,  reranker=<Reranker>   (the product)
 
 `fts_match_query` and `rrf_fuse` are pure functions, unit-tested offline; the
 reranker sits behind the `Reranker` Protocol (faked offline). Every result keeps
-the full citation metadata from M1, plus a unified `score` for display/ranking.
+the full citation metadata from ingestion, plus a unified `score` for ranking.
 """
 
 from __future__ import annotations
@@ -82,8 +82,8 @@ def search(query: str, db_path: Path, embedder: Embedder, k: int = 5, *,
            candidates: int = CANDIDATES, trace: Trace | None = None) -> list[dict[str, Any]]:
     """Retrieve the top-k chunks for `query` with citation metadata.
 
-    hybrid=True    fuses dense kNN with BM25 (RRF); False is dense-only (M2).
-    reranker!=None reorders the fused pool with a cross-encoder (M5 precision).
+    hybrid=True    fuses dense kNN with BM25 (RRF); False is dense-only.
+    reranker!=None reorders the fused pool with a cross-encoder for precision.
     trace          if given, records per-stage latency for the observability layer.
     """
     if not db_path.exists():

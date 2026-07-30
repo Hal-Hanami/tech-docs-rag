@@ -1,4 +1,4 @@
-# M4 eval set — one JSON object per line. Authored against the M1 corpus (Claude
+# Evaluation set (design §7) — one JSON object per line. Authored against the corpus (Claude
 # docs). Fields: id, question, expected_source_urls (doc pages that should answer
 # it; page-level recall target), in_corpus (false = abstention test, expect "I
 # don't know"). Only URLs + our own questions live here — no corpus body — so this
@@ -29,7 +29,7 @@
 {"id": "oob-worldcup", "question": "Who won the 2018 FIFA World Cup final?", "expected_source_urls": [], "in_corpus": false}
 {"id": "oob-nginx", "question": "How do I configure nginx as a reverse proxy?", "expected_source_urls": [], "in_corpus": false}
 {"id": "oob-weather", "question": "What will the weather be in Tokyo tomorrow?", "expected_source_urls": [], "in_corpus": false}
-# --- "hard" slice (M5): keyword-exact + near-sibling-page questions. These stress
+# --- "hard" slice: keyword-exact + near-sibling-page questions. These stress
 # what hybrid/rerank are for — exact API tokens BM25 nails, and adjacent pages a
 # dense embedding blurs together (web-fetch vs web-search, handle-tool-calls vs
 # how-tool-use-works, migration vs overview). tag=hard so `--tag hard` A/Bs them.

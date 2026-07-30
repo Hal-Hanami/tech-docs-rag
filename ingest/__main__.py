@@ -1,4 +1,4 @@
-"""CLI for the M1 ingestion pipeline.
+"""CLI for the ingestion pipeline — design §2.
 
     python -m ingest manifest          # Stage 1 -> corpus_urls.txt + category report
     python -m ingest categories        # show ALL en docs categories (scope sanity check)

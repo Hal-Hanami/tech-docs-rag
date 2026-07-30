@@ -4,10 +4,10 @@ Split at H2/H3 boundaries (not fixed-length), keep each chunk to ~300–800
 tokens, pack too-small sections into their neighbour and split oversize ones at
 paragraph/sentence boundaries (never mid code-block or mid-table). Every chunk
 carries metadata that traces back to the source: source_url / section_path /
-anchor, so an answer in M2+ can cite "which doc, which section".
+anchor, so an answer can cite "which doc, which section" (design §2.3).
 
 token_estimate is a chars/4 heuristic — accurate enough to control chunk size.
-M2 can swap in the official token-counting API if exact counts are needed.
+The official token-counting API can be swapped in if exact counts are needed.
 """
 
 from __future__ import annotations
