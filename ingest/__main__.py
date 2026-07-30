@@ -2,9 +2,9 @@
 
     python -m ingest manifest          # Stage 1 -> corpus_urls.txt + category report
     python -m ingest categories        # show ALL en docs categories (scope sanity check)
-    python -m ingest fetch [--limit N] # Stage 2 -> data/raw/*.md (cached)
-    python -m ingest build             # Stage 3 -> data/chunks.jsonl (+ stats)
-    python -m ingest all  [--limit N]  # Stages 1-3 end to end
+    python -m ingest fetch [--limit N] [--force]   # Stage 2 -> data/raw/*.md (cached)
+    python -m ingest build                         # Stage 3 -> data/chunks.jsonl (+ stats)
+    python -m ingest all  [--limit N] [--force]    # Stages 1-3 end to end
 """
 
 from __future__ import annotations
@@ -78,7 +78,13 @@ def _print_stats(stats: dict) -> None:
           f"{'OK' if ok else 'OUT OF RANGE'} ({stats['chunks']})")
 
 
-def main() -> None:
+def build_parser() -> argparse.ArgumentParser:
+    """The flag surface, separated from `main` so tests can drive it with an argv.
+
+    `all` re-declares `--limit` and `--force` because it runs `fetch` in the
+    middle of the chain and hands it the same namespace: a flag missing here
+    would not fail loudly, it would silently fetch the whole corpus.
+    """
     parser = argparse.ArgumentParser(prog="ingest", description=__doc__)
     sub = parser.add_subparsers(dest="cmd", required=True)
     sub.add_parser("manifest").set_defaults(func=cmd_manifest)
@@ -92,8 +98,11 @@ def main() -> None:
     p_all.add_argument("--limit", type=int, default=0)
     p_all.add_argument("--force", action="store_true")
     p_all.set_defaults(func=cmd_all)
+    return parser
 
-    args = parser.parse_args()
+
+def main(argv: list[str] | None = None) -> None:
+    args = build_parser().parse_args(argv)
     args.func(args)
 
 
