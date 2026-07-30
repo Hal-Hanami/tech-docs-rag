@@ -1,7 +1,14 @@
 name: tests
 
-# The offline suite (fakes; no key, no network) — the same 98 tests the README
+# The offline suite (fakes; no key, no network) — the same 134 tests the README
 # claims. CI exists so that claim is third-party verifiable, not self-reported.
+#
+# The checks after the suite exist because the defects this project has actually
+# shipped were not failures of the tests but gaps in their reach: a CLI module at
+# 0% coverage hid a flag that did not do what its help text promised, and a
+# package move broke a downstream consumer that no test on either side imported.
+# A green suite is evidence about the code it touches and nothing more, so the
+# build also fails when a module is unreached or when the docs quote a stale count.
 on:
   push:
     branches: [main]
@@ -16,4 +23,29 @@ jobs:
         with:
           python-version: "3.13"
       - run: pip install -e '.[dev]'
-      - run: python -m pytest -q
+
+      - name: suite and coverage
+        run: >
+          python -m pytest -q --cov --cov-report=term-missing
+          --cov-report=json --cov-fail-under=82
+
+      - name: every module must be reached by at least one test
+        run: |
+          python - <<'PY'
+          import json, sys
+          files = json.load(open("coverage.json"))["files"]
+          unreached = sorted(f for f, d in files.items()
+                             if d["summary"]["percent_covered"] == 0)
+          if unreached:
+              sys.exit("no test reaches: " + ", ".join(unreached))
+          print(f"all {len(files)} modules are reached")
+          PY
+
+      - name: the count the docs quote must be the count that ran
+        run: |
+          n=$(python -m pytest --collect-only -q | tail -1 | grep -oE '^[0-9]+')
+          grep -q "$n tests" README.md \
+            || { echo "README does not say '$n tests'"; exit 1; }
+          grep -q "same $n tests" .github/workflows/ci.yml \
+            || { echo "this workflow's own comment does not say '$n tests'"; exit 1; }
+          echo "docs and suite agree: $n tests"

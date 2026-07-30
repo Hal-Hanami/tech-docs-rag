@@ -13,7 +13,7 @@ requires-python = ">=3.11"
 dependencies = ["sqlite-vec", "anthropic"]
 
 [project.optional-dependencies]
-dev = ["pytest"]
+dev = ["pytest", "pytest-cov"]
 
 [build-system]
 requires = ["hatchling"]
@@ -27,3 +27,13 @@ testpaths = ["tests"]
 # Tests import sibling fixtures (`from test_store import FakeEmbedder`), which
 # needs the tests directory itself on the path.
 pythonpath = [".", "tests"]
+
+# Coverage is configured here but requested only in CI: a local `pytest -q` should
+# stay fast enough to run on every save. What CI enforces is not a percentage for
+# its own sake but a floor — every defect this project has shipped lived in code
+# no test reached, so unreached code is the thing worth failing a build over.
+[tool.coverage.run]
+source = ["rag", "demo", "ingest"]
+
+[tool.coverage.report]
+exclude_also = ["if __name__ == .__main__.:"]
